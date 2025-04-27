@@ -3,6 +3,7 @@ proiect medii si platforme
 
 📚 DESIGN PATTERNS ÎN PROIECT
 1. Factory Pattern
+
 🔹 Ce este:
 Factory Pattern este un pattern creational care permite crearea obiectelor fără să specificăm exact clasa concretă care va fi instanțiată. Factory-ul decide ce instanță să returneze.
 
@@ -23,6 +24,7 @@ Ușor de adăugat noi tipuri de caractere pe viitor (ex: Paladin, Assassin) făr
 Respectăm principiul Open/Closed din SOLID (Open for extension, Closed for modification).
 
 2. Strategy Pattern
+   
 🔹 Ce este:
 Strategy Pattern este un pattern comportamental care permite schimbarea comportamentului unui obiect în timpul execuției, alegând o strategie potrivită.
 
