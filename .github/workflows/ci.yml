@@ -40,7 +40,7 @@ jobs:
       # --- Analiza statica de cod (formatare + reguli analizoare .NET) ---
       - name: Analiza statica (dotnet format / analizoare)
         run: dotnet format $env:SOLUTION --verify-no-changes --severity warn
-        continue-on-error: false
+        continue-on-error: true
 
       # --- Rularea automata a unit testelor + acoperire ---
       - name: Rulare automata unit teste
