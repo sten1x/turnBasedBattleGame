@@ -1,0 +1,99 @@
+# =============================================================================
+#  CI/CD pentru turnBasedBattleGame (.NET 8 / Windows Forms) - GitHub Actions
+#  Acopera Tema 3: build automat, rulare automata teste, analiza statica,
+# =============================================================================
+name: CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  SOLUTION: TurnBasedBattleGame.sln
+  CONFIG: Release
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # JOB 1: Build + Analiza statica + Test + Publish artefact
+  # ---------------------------------------------------------------------------
+  build-test:
+    name: Build, Test & Static Analysis
+    runs-on: windows-latest
+    steps:
+      - name: Checkout cod
+        uses: actions/checkout@v4
+
+      - name: Instalare .NET SDK 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore pachete NuGet
+        run: dotnet restore $env:SOLUTION
+
+      # --- Build automat (analizoarele Roslyn ruleaza in timpul build-ului) ---
+      - name: Build automat (Release)
+        run: dotnet build $env:SOLUTION --configuration $env:CONFIG --no-restore
+
+      # --- Analiza statica de cod (formatare + reguli analizoare .NET) ---
+      - name: Analiza statica (dotnet format / analizoare)
+        run: dotnet format $env:SOLUTION --verify-no-changes --severity warn
+        continue-on-error: false
+
+      # --- Rularea automata a unit testelor + acoperire ---
+      - name: Rulare automata unit teste
+        run: >
+          dotnet test $env:SOLUTION
+          --configuration $env:CONFIG --no-build
+          --collect:"XPlat Code Coverage" --logger trx
+          --results-directory TestResults
+
+      - name: Incarcare rezultate teste
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: TestResults
+
+      # --- Publicarea aplicatiei ca artefact ---
+      - name: Publish aplicatie
+        run: >
+          dotnet publish TurnBasedBattleGame/TurnBasedBattleGame.csproj
+          --configuration $env:CONFIG --no-build --output publish
+
+      - name: Incarcare artefact aplicatie
+        uses: actions/upload-artifact@v4
+        with:
+          name: TurnBasedBattleGame
+          path: publish
+
+  # ---------------------------------------------------------------------------
+  # JOB 2: Deployment (pas simplu cerut: copiere fisiere in alt director)
+  # ---------------------------------------------------------------------------
+  deploy:
+    name: Deployment
+    needs: build-test
+    runs-on: windows-latest
+    steps:
+      - name: Descarcare artefact
+        uses: actions/download-artifact@v4
+        with:
+          name: TurnBasedBattleGame
+          path: app
+
+      - name: Deploy simplu (copiere fisiere in directorul de deploy)
+        shell: pwsh
+        run: |
+          $dest = "deploy"
+          New-Item -ItemType Directory -Force -Path $dest | Out-Null
+          Copy-Item -Path "app/*" -Destination $dest -Recurse -Force
+          Write-Host "Deployment realizat in: $dest"
+          Get-ChildItem -Recurse $dest | Select-Object FullName
+
+      - name: Incarcare rezultat deploy
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-output
+          path: deploy
