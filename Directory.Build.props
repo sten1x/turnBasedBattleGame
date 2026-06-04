@@ -1,0 +1,19 @@
+<!-- =========================================================================
+     Directory.Build.props
+     Activeaza analiza statica de cod (analizoarele Roslyn ale .NET) pentru
+     TOATE proiectele din solutie, fara a edita fiecare .csproj in parte.
+     ========================================================================= -->
+<Project>
+  <PropertyGroup>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+
+    <AnalysisLevel>latest</AnalysisLevel>
+
+    <!-- Aplica regulile de code style si la build (nu doar in IDE) -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+
+    <!-- Optional: tratati avertismentele de analiza ca ERORI (gate strict).
+    <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+    -->
+  </PropertyGroup>
+</Project>
